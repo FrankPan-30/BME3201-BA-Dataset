@@ -1,0 +1,11 @@
+{
+  "trials": 149,
+  "channel_records": 1788,
+  "all_12_channels": true,
+  "unique_trials": true,
+  "phase_order_valid": true,
+  "features_finite": true,
+  "cci_within_bounds": true,
+  "trained_model": false,
+  "normal_abnormal_labels": false
+}

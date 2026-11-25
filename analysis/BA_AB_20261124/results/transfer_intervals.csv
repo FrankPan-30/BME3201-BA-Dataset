@@ -1,0 +1,2 @@
+﻿record,subject,group,side,rep,start_s,end_s,duration_s,event
+ST03_DataULnonpleg_BA,ST03,ST_nonparetic,RX,1,7.976,8.48,0.504,transfer_low_speed_candidate

@@ -1,0 +1,18 @@
+{
+  "data_root": "F:/dataset/dataset",
+  "marker_unit": "mm",
+  "gap_fill_max_s": 0.08,
+  "kinematic_lowpass_hz": 6,
+  "emg_bandpass_hz": [20, 450],
+  "rms_window_s": 0.05,
+  "object_displacement_mm": [5, 10, 20],
+  "wrist_arrival_tolerance_mm": 20,
+  "pause_fraction_peak": [0.05, 0.1, 0.15],
+  "pause_min_duration_s": [0.15, 0.25, 0.4],
+  "baseline_object_mm": 10,
+  "baseline_pause_fraction": 0.1,
+  "baseline_pause_min_s": 0.25,
+  "emg_normalization_percentiles": [95, 99],
+  "sync_shift_s": [-0.1, 0, 0.1],
+  "seed": 20261124
+}

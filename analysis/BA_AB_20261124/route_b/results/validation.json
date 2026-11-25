@@ -1,0 +1,30 @@
+[
+  {
+    "variant": "raw",
+    "phase": "approach",
+    "saved_model_reproduces_membership": true,
+    "balanced_subjects": 20,
+    "segments": 300
+  },
+  {
+    "variant": "raw",
+    "phase": "transfer",
+    "saved_model_reproduces_membership": true,
+    "balanced_subjects": 20,
+    "segments": 300
+  },
+  {
+    "variant": "phase_control_",
+    "phase": "approach",
+    "saved_model_reproduces_membership": true,
+    "balanced_subjects": 20,
+    "segments": 300
+  },
+  {
+    "variant": "phase_control_",
+    "phase": "transfer",
+    "saved_model_reproduces_membership": true,
+    "balanced_subjects": 20,
+    "segments": 300
+  }
+]

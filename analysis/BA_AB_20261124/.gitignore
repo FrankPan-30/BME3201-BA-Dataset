@@ -1,0 +1,6 @@
+data_derived/
+__pycache__/
+*.pyc
+~$*
+docs/qa/
+route_b/docs/qa/
