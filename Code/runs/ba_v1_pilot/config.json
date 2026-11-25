@@ -1,0 +1,58 @@
+{
+  "data": "/Users/frankpan/Desktop/Y3S1/BME3201/Final Project/emg_dataset",
+  "output": "Final Project/Code/runs/ba_v1_pilot",
+  "epochs": 4,
+  "folds": 5,
+  "batch_size": 8,
+  "seed": 3201,
+  "threads": 2,
+  "lr": 0.001,
+  "kd_weight": 0.5,
+  "n_trials": 149,
+  "n_subjects": 20,
+  "counts": {
+    "affected": 50,
+    "healthy": 50,
+    "nonaffected": 49
+  },
+  "model_sample_rate_hz": 50,
+  "channels": {
+    "emg": [
+      "BB",
+      "TB",
+      "AD",
+      "MD",
+      "FCR",
+      "ECR"
+    ],
+    "optical": [
+      "upper_arm_tested_side",
+      "upper_arm_forward",
+      "upper_arm_up",
+      "forearm_tested_side",
+      "forearm_forward",
+      "forearm_up",
+      "elbow_flexion_rad",
+      "wrist_position_tested_side_m",
+      "wrist_position_forward_m",
+      "wrist_position_up_m",
+      "wrist_velocity_tested_side_m_s",
+      "wrist_velocity_forward_m_s",
+      "wrist_velocity_up_m_s",
+      "hand_direction_tested_side",
+      "hand_direction_forward",
+      "hand_direction_up"
+    ],
+    "common": [
+      "upper_arm_tested_side",
+      "upper_arm_forward",
+      "upper_arm_up",
+      "forearm_tested_side",
+      "forearm_forward",
+      "forearm_up",
+      "elbow_flexion_rad"
+    ]
+  },
+  "torch_version": "2.11.0",
+  "numpy_version": "2.3.5"
+}
