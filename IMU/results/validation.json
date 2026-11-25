@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-25",
+  "hardware": "ESP32-S3 + 3 GY-521/MPU-6050",
+  "serial_port_during_test": "COM3",
+  "baudrate": 115200,
+  "frames": 467,
+  "valid_samples_per_imu": [
+    467,
+    467,
+    467
+  ],
+  "all_frames_mask": 7,
+  "invalid_lines": 0,
+  "missing_frame_sequences": 0,
+  "device_frames_per_second": 49.99519359512219,
+  "calibrated": false,
+  "hardware_synchronized": false,
+  "checks": [
+    "firmware compiled and uploaded; flash hash verified",
+    "MPU6050 WHO_AM_I checked per configured module",
+    "MATLAB live three-module acquisition passed",
+    "MATLAB frame parser and missing-module NaN handling passed",
+    "CSV export passed",
+    "packaged CSV schema, finite channel values, validity masks, sequence and monotonic timestamps checked"
+  ],
+  "notes": [
+    "IMU2 AD0 wiring was corrected to 3V3 before the successful three-module check.",
+    "This is a hardware connection and visualization test, separate from the public BA dataset.",
+    "Device timestamps mark sequential read-frame starts, not a shared IMU sampling trigger."
+  ]
+}

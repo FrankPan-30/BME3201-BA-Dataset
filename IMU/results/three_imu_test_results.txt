@@ -1,0 +1,23 @@
+Three IMU connection test — 2026-11-25
+
+ESP32-S3 / COM3 / 115200 baud.
+Firmware: BME3201_ThreeIMU.ino
+IMU1: GPIO1/2, address 0x68.
+IMU2: GPIO1/2, address 0x69.
+IMU3: GPIO4/5, address 0x68.
+
+Initial scan: IMU2 did not respond at 0x69. User corrected its AD0 connection to 3V3 and reconnected USB.
+Final check: 467 valid frames; sensor sample counts 467, 467, 467.
+Latest validity mask: 7 (all three valid).
+Invalid data lines: 0. Missing frame sequences: 0.
+Device frame rate: 50.00 frames/s.
+MATLAB parser, missing-sensor NaN handling, live acquisition and CSV export passed.
+
+Latest readings (raw, uncalibrated):
+IMU1: -0.777, 0.202, 0.688, -5.282, 1.237, -1.313
+IMU2: -0.763, 0.179, 0.808, -0.015, 4.840, 3.031
+IMU3: -0.414, -0.268, 0.696, 39.359, 102.511, 59.221
+Columns: ax/ay/az (g), gx/gy/gz (deg/s).
+
+All modules are read sequentially; this does not establish hardware-synchronized sampling.
+Calibration and per-module movement checks remain separate from the connection check.

@@ -1,0 +1,75 @@
+{
+  "note": "SHA-256 of packaged source and result files; this manifest excludes itself.",
+  "files": [
+    {
+      "path": "IMU/Code/firmware/BME3201_IMU_Test/BME3201_IMU_Test.ino",
+      "bytes": 3230,
+      "sha256": "82fb1358de37a866100a668aaaaeecb809b21b6f673fb468c28e0fc2ef373308"
+    },
+    {
+      "path": "IMU/Code/firmware/BME3201_ThreeIMU/BME3201_ThreeIMU.ino",
+      "bytes": 4372,
+      "sha256": "a3438c224410fd705cf7320422c1e9b94648c847d6e771f3f42443040754236d"
+    },
+    {
+      "path": "IMU/Code/matlab/.vscode/extensions.json",
+      "bytes": 63,
+      "sha256": "6c6e0434c865718d0851226f10673bac2a4f54e1700c560a833968ec49018024"
+    },
+    {
+      "path": "IMU/Code/matlab/.vscode/settings.json",
+      "bytes": 78,
+      "sha256": "da10cb41fa2ed64c049ab1c3d42c9fa4060f8020224c5158c3dee1f11106b080"
+    },
+    {
+      "path": "IMU/Code/matlab/README.txt",
+      "bytes": 1977,
+      "sha256": "15b6ab1f3b0ed45a750062e373aaa3ffbd3a8a85ff50aa9bfec1783e75ce2642"
+    },
+    {
+      "path": "IMU/Code/matlab/run_imu_dashboard.m",
+      "bytes": 500,
+      "sha256": "1435c758c151650a1530743737f2c3441fa75d05684049e056f66f19e67810ec"
+    },
+    {
+      "path": "IMU/Code/matlab/Start_Dashboard.cmd",
+      "bytes": 500,
+      "sha256": "d5ff5ef853afcd7d7e3735da7adbe41fb91416e737c6937920e3b26e0a8cc4c5"
+    },
+    {
+      "path": "IMU/Code/matlab/ThreeIMUDashboard.m",
+      "bytes": 18302,
+      "sha256": "0e9297425b5f53e4a6ed69be30536b6b616220878fce1be3718c7aa5e0c96e9a"
+    },
+    {
+      "path": "IMU/README.txt",
+      "bytes": 1635,
+      "sha256": "0718291e3013f6c85bfb7f3c3099b5868b7fafe9faa1ddfc64ea6e006eb57753"
+    },
+    {
+      "path": "IMU/results/single_imu/IMU_motion_test.csv",
+      "bytes": 154064,
+      "sha256": "d482234dcec4efa9885b7dd398386232e4c807c94f7ae1db0b2d39d62e65c661"
+    },
+    {
+      "path": "IMU/results/single_imu/IMU_test_results.txt",
+      "bytes": 2458,
+      "sha256": "23a5670d7f2651a603114feb4f35f29aa087b2a185ea71b29e1a71adbf00318c"
+    },
+    {
+      "path": "IMU/results/three_imu_connection_test.csv",
+      "bytes": 67457,
+      "sha256": "7c616ca46181232af7169155f6e17075043101694605bc9a2dd6830358458701"
+    },
+    {
+      "path": "IMU/results/three_imu_test_results.txt",
+      "bytes": 987,
+      "sha256": "1293b848c9355ede237b68e4ccfec5e7726207b3c6569885dc680a703c89bec0"
+    },
+    {
+      "path": "IMU/results/validation.json",
+      "bytes": 1071,
+      "sha256": "7d631b8debda2b91cf3a61f7a46f56f012b041e339e787f8f7aefda9676d4405"
+    }
+  ]
+}
