@@ -20,6 +20,10 @@ from ba_data import COMMON_CHANNELS, EMG_CHANNELS, OPTICAL_CHANNELS, TRAIN_HZ, l
 
 ROOT = Path(__file__).resolve().parent
 FIELDS = ("emg", "optical", "common")
+TEACHER_MODES = {
+    "teacher-only": {"teacher": True},
+    "teacher-comparison": {"teacher_optical_only": False, "teacher_emg_optical": True},
+}
 
 
 class Encoder(nn.Module):
@@ -48,13 +52,14 @@ class TwoBranch(nn.Module):
         self.emg_head = nn.Linear(latent, len(EMG_CHANNELS))
         self.motion_head = nn.Linear(latent, second_channels)
 
-    def encode(self, batch, second, masks=None):
+    def encode(self, batch, second, masks=None, *, use_emg=True):
         values, valid, lengths = batch
         if masks is None:
             blank = torch.zeros_like(valid)
             masks = (blank, blank)
-        e = self.emg_encoder(values["emg"], masks[0], valid, lengths)
         k = self.motion_encoder(values[second], masks[1], valid, lengths)
+        # Keep the same fusion and motion weights in the paired comparison.
+        e = self.emg_encoder(values["emg"], masks[0], valid, lengths) if use_emg else torch.zeros_like(k)
         return self.fuse(torch.cat((e, k), dim=-1)).masked_fill(~valid[..., None], 0)
 
     def reconstruct(self, encoded):
@@ -107,23 +112,25 @@ def masked_error(prediction, target, mask, squared=True):
     return ((per_frame * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1)).mean()
 
 
-def fit_model(model, second, trials, scales, args, seed, teacher=None, projector=None):
+def fit_model(model, second, trials, scales, args, seed, teacher=None, projector=None, *,
+              epochs, stage, use_emg=True, reconstruct_emg=True):
     rng = np.random.default_rng(seed)
     params = list(model.parameters())
     use_kd = teacher is not None and args.kd_weight > 0
     if use_kd:
         params += list(projector.parameters())
     optimizer = torch.optim.AdamW(params, lr=args.lr)
-    for epoch in range(args.epochs):
+    for epoch in range(epochs):
         losses = []
         for idx in np.array_split(rng.permutation(len(trials)), int(np.ceil(len(trials) / args.batch_size))):
             batch = make_batch([trials[i] for i in idx], scales)
             values, valid, lengths = batch
             masks = (mask_spans(lengths, rng), mask_spans(lengths, rng))
-            encoded = model.encode(batch, second, masks)
-            e_pred, k_pred = model.reconstruct(encoded)
-            loss = (masked_error(e_pred, values["emg"], masks[0])
-                    + masked_error(k_pred, values[second], masks[1])) / 2
+            encoded = model.encode(batch, second, masks, use_emg=use_emg)
+            loss = masked_error(model.motion_head(encoded), values[second], masks[1])
+            if reconstruct_emg:
+                emg_loss = masked_error(model.emg_head(encoded), values["emg"], masks[0])
+                loss = (loss + emg_loss) / 2
             if use_kd:
                 with torch.no_grad():
                     target = teacher.encode(batch, "optical")
@@ -134,10 +141,17 @@ def fit_model(model, second, trials, scales, args, seed, teacher=None, projector
             nn.utils.clip_grad_norm_(params, 1.0, error_if_nonfinite=True)
             optimizer.step()
             losses.append(loss.item())
-        if epoch == 0 or (epoch + 1) % 10 == 0 or epoch + 1 == args.epochs:
-            stage = "student_kd" if use_kd else "teacher" if second == "optical" else "student_direct"
-            print(f"  {stage:14s} epoch {epoch + 1:02d}/{args.epochs:02d}  loss {np.mean(losses):.4f}", flush=True)
+        if epoch == 0 or (epoch + 1) % 10 == 0 or epoch + 1 == epochs:
+            print(f"  {stage:21s} epoch {epoch + 1:02d}/{epochs:02d}  loss {np.mean(losses):.4f}", flush=True)
     model.eval()
+
+
+def fit_teacher(trials, scales, args, seed, name, use_emg=True, reconstruct_emg=True):
+    torch.manual_seed(seed)
+    model = make_teacher()
+    fit_model(model, "optical", trials, scales, args, seed, epochs=args.teacher_epochs,
+              stage=name, use_emg=use_emg, reconstruct_emg=reconstruct_emg)
+    return model.requires_grad_(False)
 
 
 def interpolate(x, hidden):
@@ -153,6 +167,12 @@ def interpolate(x, hidden):
 def pool(encoded):
     # Ordered summaries preserve coarse timing within the unwarped trial.
     return np.concatenate([part.mean(axis=0) for part in np.array_split(encoded, 3)])
+
+
+def add_reference_features(z, trial, values):
+    raw = torch.cat((values["emg"], values["common"]), dim=-1)[0].numpy()
+    z["feature_summary"].append(np.r_[pool(raw), raw.std(axis=0)])
+    z["duration"].append([trial.metrics["duration_s"]])
 
 
 @torch.no_grad()
@@ -172,9 +192,7 @@ def representations(trials, scales, teacher, direct, student, projector, seed, f
             # Same phase indices for both modalities and all models, fixed count per trial.
             indices = np.linspace(0, lengths[0] - 1, 24).round().astype(int)
             sequences[name].append(latent[0, indices].numpy())
-        raw = torch.cat((values["emg"], values["common"]), dim=-1)[0].numpy()
-        z["feature_summary"].append(np.r_[pool(raw), raw.std(axis=0)])
-        z["duration"].append([trial.metrics["duration_s"]])
+        add_reference_features(z, trial, values)
         if fold is None:
             continue
         e_mask, o_mask, k_mask = (mask_spans(lengths, rng) for _ in range(3))
@@ -196,6 +214,41 @@ def representations(trials, scales, teacher, direct, student, projector, seed, f
         row["kd_projection_mse"] = masked_error(projector(sk), te, valid).item()
         rows.append(row)
     return {k: np.asarray(v) for k, v in z.items()}, {k: np.asarray(v) for k, v in sequences.items()}, rows
+
+
+@torch.no_grad()
+def teacher_representations(trials, scales, models, inputs, seed, fold=None):
+    """Evaluate every teacher on the same trials and exact optical masks."""
+    rng = np.random.default_rng(seed)
+    z = {name: [] for name in (*models, "feature_summary", "duration")}
+    rows = []
+    for trial in trials:
+        batch = make_batch([trial], scales)
+        values, _, lengths = batch
+        add_reference_features(z, trial, values)
+        for name, model in models.items():
+            clean = model.encode(batch, "optical", use_emg=inputs[name])
+            z[name].append(pool(clean[0].numpy()))
+        if fold is None:
+            continue
+        # Draw the common mask too so teacher-only and full runs use identical masks.
+        e_mask, o_mask, _ = (mask_spans(lengths, rng) for _ in FIELDS)
+        row = {"fold": fold, "trial": trial.id, "subject": trial.subject, "group": trial.group}
+        masks = (e_mask, o_mask)
+        for name, model in models.items():
+            encoded = model.encode(batch, "optical", masks, use_emg=inputs[name])
+            optical = model.motion_head(encoded)
+            metric = "teacher_optical" if name == "teacher" else name
+            row[metric + "_mae_z"] = masked_error(optical, values["optical"], o_mask, squared=False).item()
+            if name == "teacher":
+                emg_baseline = interpolate(values["emg"][0], e_mask[0])[None, ...]
+                row["teacher_emg_mae_z"] = masked_error(model.emg_head(encoded), values["emg"], e_mask,
+                                                        squared=False).item()
+                row["interp_emg_mae_z"] = masked_error(emg_baseline, values["emg"], e_mask, squared=False).item()
+        optical_baseline = interpolate(values["optical"][0], o_mask[0])[None, ...]
+        row["interp_optical_mae_z"] = masked_error(optical_baseline, values["optical"], o_mask, squared=False).item()
+        rows.append(row)
+    return {name: np.asarray(values) for name, values in z.items()}, rows
 
 
 def alignment(train, test, test_rows):
@@ -229,6 +282,7 @@ def subject_features(trials, features):
 def probes(train_trials, test_trials, train_z, test_z, fold):
     rows = []
     metric_keys = sorted(set.intersection(*(set(t.metrics) for t in train_trials + test_trials)))
+    first_readout = next(iter(train_z))
     for name, train_x in train_z.items():
         test_x = test_z[name]
         for metric in metric_keys:
@@ -243,7 +297,8 @@ def probes(train_trials, test_trials, train_z, test_z, fold):
                 t = test_trials[i]
                 rows.append(dict(fold=fold, model=name, metric=metric, subject=t.subject,
                                  trial=t.id, group=t.group, truth=test_y[i], prediction=value))
-                if name == "teacher":
+                # The training median is shared, so emit it only once.
+                if name == first_readout:
                     rows.append(dict(fold=fold, model="training_median", metric=metric, subject=t.subject,
                                      trial=t.id, group=t.group, truth=test_y[i], prediction=np.median(train_y[train_ok])))
         keys, x_test, y_test = subject_features(test_trials, test_x)
@@ -305,11 +360,50 @@ def summarize(trials, probe_rows):
     return scores
 
 
+def run_full_fold(train_trials, test_trials, scales, args, seed, fold):
+    teacher = fit_teacher(train_trials, scales, args, seed, "teacher")
+    torch.manual_seed(seed + 1)
+    direct = make_student()
+    student = make_student()
+    student.load_state_dict(direct.state_dict())
+    projector = nn.Linear(12, 24)
+    fit_model(direct, "common", train_trials, scales, args, seed + 2,
+              epochs=args.epochs, stage="student_direct")
+    fit_model(student, "common", train_trials, scales, args, seed + 2, teacher, projector,
+              epochs=args.epochs, stage="student_kd")
+    train_z, train_seq, _ = representations(train_trials, scales, teacher, direct, student, projector, seed)
+    test_z, test_seq, rows = representations(test_trials, scales, teacher, direct, student, projector, seed + 3, fold)
+    alignment(train_seq, test_seq, rows)
+    embeddings = []
+    for trial, latent in zip(test_trials, test_z["student_kd"], strict=True):
+        embeddings.append({"fold": fold, "trial": trial.id, "subject": trial.subject, "group": trial.group,
+                           **{f"kd_{j:02d}": v for j, v in enumerate(latent)}})
+    weights = {"teacher": teacher.state_dict(), "student_direct": direct.state_dict(),
+               "student_kd": student.state_dict(), "projection": projector.state_dict()}
+    return rows, probes(train_trials, test_trials, train_z, test_z, fold), embeddings, weights
+
+
+def run_teacher_fold(train_trials, test_trials, scales, args, seed, fold):
+    inputs = TEACHER_MODES[args.mode]
+    dual_objective = args.mode == "teacher-only"
+    models = {name: fit_teacher(train_trials, scales, args, seed, name, use_emg,
+                                reconstruct_emg=dual_objective)
+              for name, use_emg in inputs.items()}
+    train_z, _ = teacher_representations(train_trials, scales, models, inputs, seed)
+    test_z, rows = teacher_representations(test_trials, scales, models, inputs, seed + 3, fold)
+    weights = {name: model.state_dict() for name, model in models.items()}
+    weights["teacher_use_emg"] = inputs
+    return rows, probes(train_trials, test_trials, train_z, test_z, fold), [], weights
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=ROOT.parent / "emg_dataset")
-    parser.add_argument("--output", type=Path, default=ROOT / "runs" / "ba_v1")
-    parser.add_argument("--epochs", type=int, default=24, help="epochs per model")
+    parser.add_argument("--output", type=Path, help="new directory for this run")
+    parser.add_argument("--mode", choices=("full", *TEACHER_MODES), default="full",
+                        help="full distillation, original teacher, or paired optical reconstruction control")
+    parser.add_argument("--epochs", type=int, default=24, help="epochs per student and default for teachers")
+    parser.add_argument("--teacher-epochs", type=int, help="override the teacher training duration")
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--seed", type=int, default=3201)
@@ -317,7 +411,12 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--kd-weight", type=float, default=0.5)
     args = parser.parse_args()
-    if min(args.epochs, args.batch_size, args.threads) < 1 or args.folds < 2:
+    if args.teacher_epochs is None:
+        args.teacher_epochs = args.epochs
+    if args.output is None:
+        default_run = "ba_v1" if args.mode == "full" else "ba_" + args.mode.replace("-", "_")
+        args.output = ROOT / "runs" / default_run
+    if min(args.epochs, args.teacher_epochs, args.batch_size, args.threads) < 1 or args.folds < 2:
         parser.error("epochs, batch size and threads must be positive, with at least two folds")
     if not np.isfinite([args.lr, args.kd_weight]).all() or args.lr <= 0 or args.kd_weight <= 0:
         parser.error("learning rate and distillation weight must be finite and positive")
@@ -337,10 +436,13 @@ def main():
     counts = {group: sum(t.group == group for t in trials) for group in sorted({t.group for t in trials})}
     config = {**vars(args), "n_trials": len(trials), "n_subjects": len(subjects), "counts": counts,
               "model_sample_rate_hz": TRAIN_HZ,
+              "teacher_targets": ["optical"] if args.mode == "teacher-comparison" else ["emg", "optical"],
+              "teacher_use_emg": TEACHER_MODES.get(args.mode, {"teacher": True}),
               "channels": dict(emg=list(EMG_CHANNELS), optical=list(OPTICAL_CHANNELS), common=list(COMMON_CHANNELS)),
               "torch_version": str(torch.__version__), "numpy_version": np.__version__}
     (args.output / "config.json").write_text(json.dumps(config, default=str, indent=2), encoding="utf-8")
     all_trials, all_probes, embedding_rows, splits = [], [], [], []
+    run_fold = run_full_fold if args.mode == "full" else run_teacher_fold
     for fold, (train_idx, test_idx) in enumerate(folds.split(subjects, families), start=1):
         train_ids = set(subjects[train_idx].tolist())
         test_ids = set(subjects[test_idx].tolist())
@@ -350,27 +452,11 @@ def main():
         print(f"Fold {fold}/{args.folds}: {len(train_trials)} train / {len(test_trials)} test trials", flush=True)
         scales = fit_scales(train_trials)
         seed = args.seed + 101 * fold
-        torch.manual_seed(seed)
-        teacher = make_teacher()
-        fit_model(teacher, "optical", train_trials, scales, args, seed)
-        teacher.requires_grad_(False)
-        torch.manual_seed(seed + 1)
-        direct = make_student()
-        student = make_student()
-        student.load_state_dict(direct.state_dict())
-        projector = nn.Linear(12, 24)
-        fit_model(direct, "common", train_trials, scales, args, seed + 2)
-        fit_model(student, "common", train_trials, scales, args, seed + 2, teacher, projector)
-        train_z, train_seq, _ = representations(train_trials, scales, teacher, direct, student, projector, seed)
-        test_z, test_seq, rows = representations(test_trials, scales, teacher, direct, student, projector, seed + 3, fold)
-        alignment(train_seq, test_seq, rows)
+        rows, fold_probes, embeddings, weights = run_fold(train_trials, test_trials, scales, args, seed, fold)
         all_trials.extend(rows)
-        all_probes.extend(probes(train_trials, test_trials, train_z, test_z, fold))
-        for i, trial in enumerate(test_trials):
-            embedding_rows.append({"fold": fold, "trial": trial.id, "subject": trial.subject, "group": trial.group,
-                                   **{f"kd_{j:02d}": v for j, v in enumerate(test_z["student_kd"][i])}})
-        torch.save({"teacher": teacher.state_dict(), "student_direct": direct.state_dict(),
-                    "student_kd": student.state_dict(), "projection": projector.state_dict(),
+        all_probes.extend(fold_probes)
+        embedding_rows.extend(embeddings)
+        torch.save({**weights,
                     "scale": {k: tuple(torch.from_numpy(a) for a in v) for k, v in scales.items()},
                     "split": splits[-1], "channels": config["channels"]},
                    args.output / f"fold_{fold:02d}.pt")
@@ -378,7 +464,8 @@ def main():
     (args.output / "splits.json").write_text(json.dumps(splits, indent=2), encoding="utf-8")
     write_csv(args.output / "trial_metrics.csv", all_trials)
     write_csv(args.output / "probe_predictions.csv", all_probes)
-    write_csv(args.output / "student_embeddings.csv", embedding_rows)
+    if embedding_rows:
+        write_csv(args.output / "student_embeddings.csv", embedding_rows)
     write_csv(args.output / "summary.csv", summarize(all_trials, all_probes))
     print(f"Results: {args.output}", flush=True)
 

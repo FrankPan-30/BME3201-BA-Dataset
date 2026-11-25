@@ -1,5 +1,7 @@
 # BA 抓球动作表示学习 V1
 
+接手实验请先读 [EXPERIMENT.md](EXPERIMENT.md)。其中记录版本、教师对照命令和结果验收口径。
+
 目标是检验两件事。首先，结合表面肌电和完整光学运动学的教师，能否重建留出受试者的遮挡片段。其次，只使用原型可观测特征的学生，能否通过蒸馏保留更多有用的动作信息。健康和卒中试验都进入自监督训练，组别信息用于划分折和训练后的探索性分析。
 
 ## 训练结构
@@ -33,13 +35,13 @@ python -m pip install -r requirements.txt
 python train_ba.py --epochs 4 --folds 5 --output runs/ba_v1_repeat
 ```
 
-默认训练轮数是每个模型 24 轮。正式比较可预先指定候选配置，在训练折内选择。输出目录需尚未存在，以保留独立运行记录。
+默认模式 `full` 训练教师、无蒸馏学生和蒸馏学生，每个模型默认 24 轮。`--teacher-epochs` 可单独设置教师轮数。两种仅训练教师的模式及其比较规则见 [实验记录](EXPERIMENT.md)。输出目录需尚未存在，以保留独立运行记录。
 
 | 输出 | 内容 |
 |---|---|
 | `summary.csv` | 重建、特征对齐和动作指标探针的汇总 |
 | `trial_metrics.csv`、`probe_predictions.csv` | 留出预测和逐次误差 |
-| `student_embeddings.csv` | 留出试验的 36 维学生表示与折编号 |
+| `student_embeddings.csv` | `full` 模式下留出试验的 36 维学生表示与折编号 |
 | `fold_*.pt` | 每折的教师、学生、投影层、标准化参数和数据划分 |
 | `config.json`、`splits.json` | 参数、通道与受试者划分 |
 
