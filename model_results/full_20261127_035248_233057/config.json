@@ -1,0 +1,67 @@
+{
+  "data": "/content/drive/MyDrive/dataset",
+  "output": "/content/drive/MyDrive/BA_runs/full_20261127_035248_233057",
+  "mode": "full",
+  "epochs": 24,
+  "teacher_epochs": 24,
+  "folds": 5,
+  "batch_size": 8,
+  "seed": 3201,
+  "threads": 2,
+  "lr": 0.001,
+  "kd_weight": 0.5,
+  "n_trials": 149,
+  "n_subjects": 20,
+  "counts": {
+    "affected": 50,
+    "healthy": 50,
+    "nonaffected": 49
+  },
+  "model_sample_rate_hz": 50,
+  "teacher_targets": [
+    "emg",
+    "optical"
+  ],
+  "teacher_use_emg": {
+    "teacher": true
+  },
+  "channels": {
+    "emg": [
+      "BB",
+      "TB",
+      "AD",
+      "MD",
+      "FCR",
+      "ECR"
+    ],
+    "optical": [
+      "upper_arm_tested_side",
+      "upper_arm_forward",
+      "upper_arm_up",
+      "forearm_tested_side",
+      "forearm_forward",
+      "forearm_up",
+      "elbow_flexion_rad",
+      "wrist_position_tested_side_m",
+      "wrist_position_forward_m",
+      "wrist_position_up_m",
+      "wrist_velocity_tested_side_m_s",
+      "wrist_velocity_forward_m_s",
+      "wrist_velocity_up_m_s",
+      "hand_direction_tested_side",
+      "hand_direction_forward",
+      "hand_direction_up"
+    ],
+    "common": [
+      "upper_arm_tested_side",
+      "upper_arm_forward",
+      "upper_arm_up",
+      "forearm_tested_side",
+      "forearm_forward",
+      "forearm_up",
+      "elbow_flexion_rad"
+    ]
+  },
+  "torch_version": "2.14.1+cu130",
+  "numpy_version": "2.4.6"
+}
