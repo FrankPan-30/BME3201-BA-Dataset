@@ -1,0 +1,9 @@
+node_modules/
+dist/
+release/
+release-*/
+.builder-cache/
+.npm-cache/
+.nsis-tools/
+*.log
+.DS_Store

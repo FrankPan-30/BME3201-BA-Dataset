@@ -1,0 +1,106 @@
+/* BME3201 Motion Lab v1.4.0 — Unified Liquid Titanium (VisionOS Pure White) Design Tokens */
+
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/inter.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  /* Studio Pure-White Canvas */
+  --bg-canvas-inner: #FFFFFF;
+  --bg-canvas-mid:   #F4F5F7;
+  --bg-canvas-outer: #ECEEF2;
+  --bg-start:        #F8F9FB;
+  --bg-end:          #EEF0F4;
+
+  /* Liquid White Glass Surfaces */
+  --glass-bg:        rgba(255, 255, 255, 0.72);
+  --glass-bg-static: rgba(255, 255, 255, 0.80);
+  --glass-bg-dense:  rgba(255, 255, 255, 0.90);
+  --glass-border:    rgba(255, 255, 255, 0.92);
+  --glass-edge:      rgba(15, 23, 42, 0.07);
+  --well-bg:         rgba(15, 23, 42, 0.032);
+  --well-border:     rgba(15, 23, 42, 0.06);
+  --surface-subtle:  #F1F2F6;
+  --surface-hover:   rgba(15, 23, 42, 0.045);
+
+  /* Neutral Metallic-Silver Floating Orbs (achromatic refraction behind white glass) */
+  --orb-1: rgba(218, 223, 234, 0.72);
+  --orb-2: rgba(232, 235, 242, 0.68);
+  --orb-3: rgba(212, 221, 234, 0.62);
+
+  /* Shadows (neutral cool-slate, zero purple cast) */
+  --shadow-rgb: 15, 23, 42;
+
+  /* 3-Tier Typography Contrast */
+  --text-primary:   #16181F;
+  --text-secondary: #525866;
+  --text-tertiary:  #868D9E;
+  --divider:        rgba(15, 23, 42, 0.075);
+
+  /* Liquid Titanium Monochrome Chrome Accent */
+  --accent:         #272A34;
+  --accent-hover:   #16181F;
+  --accent-chrome:  #3F4756;
+  --accent-soft:    rgba(39, 42, 52, 0.085);
+  --accent-border:  rgba(39, 42, 52, 0.22);
+
+  /* Semantic Status Colors (strictly one meaning each) */
+  --success:        #10B981;
+  --success-text:   #047857;
+  --success-soft:   rgba(16, 185, 129, 0.11);
+  --accent-warm:    #D97706;
+  --warn-text:      #92400E;
+  --warn-soft:      rgba(217, 119, 6, 0.12);
+  --danger:         #DC2626;
+  --danger-text:    #B91C1C;
+  --danger-soft:    rgba(220, 38, 38, 0.10);
+
+  /* Data Visualization Neutrals */
+  --plot-grid-major-color: rgba(15, 23, 42, 0.085);
+  --plot-grid-minor-color: rgba(15, 23, 42, 0.042);
+  --plot-baseline:         rgba(15, 23, 42, 0.075);
+  --plot-playhead:         #16181F;
+  --plot-threshold:        #475569;
+  --raw-emg:               #64748B;
+  --activation-fill:       rgba(39, 42, 52, 0.09);
+
+  /* Unified Spacing, Radii & Motion */
+  --grid-unit: 8px;
+  --gap:       16px;
+  --card-padding: 20px;
+
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   18px;
+  --r-pill: 999px;
+
+  --ease:        cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Shell & Plot Sizing */
+  --nav-control:       42px;
+  --nav-compact:       72px;
+  --nav-expanded:      184px;
+  --card-header-height: 30px;
+  --card-heading-icon:  17px;
+  --plot-label-width:   164px;
+  --plot-range-width:   72px;
+  --plot-axis-inset:    22px;
+  --plot-height:        clamp(240px, calc(100vh - 385px), 520px);
+
+  /* Legacy Chart Sizing */
+  --label: clamp(105px, 11.8vw, 166px);
+  --row:   clamp(27px, calc((100vh - 317px) / 7.5), 78px);
+
+  font: 400 13px/1.5 Inter, "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-canvas-mid);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}

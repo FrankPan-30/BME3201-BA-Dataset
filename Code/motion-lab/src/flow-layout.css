@@ -1,0 +1,133 @@
+/* Live Flow & Replay Controls — Unified Liquid Titanium Pills & Hatched Signal Gaps */
+
+.flow-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.flow-page .toolbar { margin: 0; }
+.flow-toolbar .toolbar-actions { flex-wrap: wrap; gap: 6px; }
+.toolbar-sub-btn { min-height: 32px; padding: 4px 12px; font-size: 12px; }
+.flow-inline-banner { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.flow-inline-banner .flow-calibration { flex: 1; padding: 8px 14px; }
+
+.record-back-pill {
+  min-height: 32px;
+  padding: 4px 12px 4px 10px;
+  font-size: 12px;
+}
+
+.flow-state { min-inline-size: 108px; gap: 6px; }
+.flow-state i, .flow-signal i { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--text-tertiary); }
+.flow-state[data-tone="ok"] { color: var(--success-text); background: var(--success-soft); }
+.flow-state[data-tone="ok"] i, .flow-signal[data-tone="ok"] i { background: var(--success); }
+.flow-state[data-tone="warning"] { color: var(--warn-text); background: var(--warn-soft); }
+.flow-state[data-tone="warning"] i, .flow-signal[data-tone="warning"] i { background: var(--accent-warm); }
+.flow-state[data-tone="danger"] { color: var(--danger-text); background: var(--danger-soft); }
+.flow-state[data-tone="danger"] i { background: var(--danger); }
+
+.flow-primary { min-inline-size: 148px; }
+
+.flow-segment {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--well-bg);
+  border: 1px solid var(--well-border);
+}
+.flow-segment button {
+  border: 0;
+  background: none;
+  border-radius: var(--r-pill);
+  color: var(--text-secondary);
+  padding: 4px 11px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 180ms var(--ease), color 180ms var(--ease);
+}
+.flow-segment button[aria-pressed="true"] {
+  color: var(--text-primary);
+  font-weight: 600;
+  background: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(var(--shadow-rgb), 0.10);
+}
+
+.flow-device-toggle { min-height: 36px; font-size: 12px; padding-inline: 13px; }
+.flow-device-toggle > span:first-child { overflow: hidden; text-overflow: ellipsis; max-width: 118px; }
+.flow-device-toggle[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: var(--accent-border);
+}
+.flow-signal { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-size: 12px; }
+
+.flow-device-panel { padding: var(--card-padding); display: grid; gap: var(--gap); animation: shell-enter 240ms var(--ease-spring) both; }
+.flow-device-heading, .flow-summary-head, .flow-operation {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+}
+.flow-device-heading h2, .flow-summary h2 { font-size: 15px; font-weight: 600; }
+.flow-device-heading span, .flow-summary-head p, .flow-device-note { font-size: 12px; color: var(--text-secondary); }
+.flow-chooser { padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
+.flow-chooser > div { display: flex; gap: 8px; align-items: center; }
+
+.flow-sensor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap); }
+.flow-sensor-grid > div { display: grid; grid-template-columns: minmax(50px, .65fr) 1fr; gap: 4px var(--grid-unit); padding: 12px 14px; }
+.flow-sensor-grid > div > span:nth-child(2) { color: var(--text-secondary); font-size: 12px; }
+.flow-sensor-grid small { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; color: var(--text-secondary); font-size: 12px; }
+
+.flow-simulation { border-top: 1px solid var(--divider); padding-top: 10px; }
+.flow-simulation summary { color: var(--text-secondary); font-size: 12px; cursor: pointer; }
+.flow-demo-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.flow-demo-actions [aria-pressed="true"] {
+  color: #FFFFFF;
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.flow-operation { min-height: 36px; }
+.flow-action-note, .flow-secondary, .flow-summary-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.flow-action-note { color: var(--text-secondary); font-size: 12px; }
+.flow-secondary { margin-inline-start: auto; }
+.flow-secondary .button { min-height: 32px; padding-inline: 13px; font-size: 12px; }
+.flow-device-warning { border-radius: var(--r-pill); color: var(--warn-text); background: var(--warn-soft); padding: 4px 12px; font-weight: 500; }
+
+.flow-calibration { display: flex; align-items: center; gap: var(--gap); padding: 12px 18px; }
+.flow-calibration progress { flex: 1; accent-color: var(--accent); }
+.flow-calibration-result { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap); color: var(--text-secondary); padding-inline: 6px; font-size: 12px; }
+.flow-calibration-result b { color: var(--text-primary); }
+
+.flow-summary { display: grid; gap: var(--gap); padding: var(--card-padding); }
+.flow-summary-data { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0; gap: 10px; }
+.flow-summary-data div { border-radius: var(--r-md); background: var(--well-bg); border: 1px solid var(--well-border); padding: 12px 14px; min-width: 0; }
+.flow-summary-data dt { color: var(--text-secondary); font-size: 12px; }
+.flow-summary-data dd { margin: 2px 0 0; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.flow-gap-list, .flow-phase-summary { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 0; padding: 0; list-style: none; font-size: 12px; }
+.flow-phase-summary li { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+.flow-phase-summary b { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.flow-gap-list li { background: var(--danger-soft); color: var(--danger-text); padding: 4px 10px; border-radius: var(--r-pill); }
+
+.replay-controls { display: flex; align-items: center; gap: 6px; }
+.stable-replay-button { min-inline-size: 112px; }
+.replay-speed select { width: 62px; }
+
+/* Signal Gap (distinct diagonal red-gray hatch) & Event Mark */
+.demo-gap, .demo-mark { position: absolute; inset-block: 0; pointer-events: none; }
+.demo-gap {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(220, 38, 38, 0.06) 0 6px,
+    rgba(220, 38, 38, 0.16) 6px 12px
+  );
+  border-inline: 1px dashed rgba(220, 38, 38, 0.48);
+}
+.demo-mark { border-left: 1.5px solid var(--accent-chrome); opacity: .82; }
+
+@media (max-width: 759px) {
+  .flow-toolbar .toolbar-actions { margin-inline-start: 0; }
+  .flow-summary-data { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .flow-sensor-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,302 @@
+/* 3D Pose Panel — 4-Angle Interactive Overlay & Full-Stretch Grid */
+
+.ba-wave-panel {
+  --pose-column: clamp(300px, 27.5%, 416px);
+  --pose-column-compact: 274px;
+  container: signal-panel / inline-size;
+}
+.pose-signal-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--pose-column);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px 14px;
+  align-items: stretch;
+}
+.pose-signal-grid .ba-wave-heading { grid-area: 1 / 1; margin: 0; min-width: 0; }
+.ba-wave-heading .ba-source-rate { margin-inline-end: var(--plot-axis-inset); }
+.pose-column-heading {
+  grid-area: 1 / 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 26px;
+}
+.pose-column-heading h2 { font-size: 13px; font-weight: 600; }
+.pose-column-heading .chip { flex: none; }
+.pose-heading-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+.pose-more-wrap { position: relative; }
+.pose-more-btn { width: 26px; height: 26px; border: 1px solid var(--well-border); background: rgba(255, 255, 255, 0.85); }
+.pose-more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 35;
+  min-width: 210px;
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+}
+.pose-more-limb {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px 7px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--well-border);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+.pose-more-limb b { color: var(--text-primary); font-weight: 600; }
+.pose-more-msg { padding: 4px 10px; font-size: 11px; color: var(--text-secondary); }
+
+.pose-live-dot, .pose-status i {
+  flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--text-tertiary);
+}
+.pose-live-dot { margin-inline-end: 5px; background: var(--success); }
+
+.ba-signal-content {
+  grid-area: 2 / 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ba-signal-content > .plot-grid { flex: 1; min-height: 0; margin-top: 0; }
+
+/* Seamless Studio-White 3D Viewport */
+.pose-panel {
+  grid-area: 2 / 2;
+  display: grid;
+  grid-template-rows: auto minmax(110px, 1fr) auto auto;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: radial-gradient(ellipse at 50% 42%, rgba(255, 255, 255, 0.96) 15%, rgba(244, 245, 248, 0.74) 100%);
+  box-shadow: inset 0 0 0 1px var(--well-border);
+  contain: size;
+  overflow: hidden;
+}
+.pose-controls, .pose-source-actions {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; flex-wrap: wrap;
+}
+.pose-source-actions { grid-area: 3 / 2; justify-content: flex-start; align-self: center; }
+.pose-source-actions small { font-size: 11px; color: var(--text-secondary); }
+
+.pose-view-switch, .signal-pane-switch {
+  display: inline-flex; align-items: stretch; gap: 2px; padding: 2px;
+  border-radius: var(--r-pill); background: var(--well-bg); border: 1px solid var(--well-border);
+}
+.signal-pane-switch { display: none; }
+.pose-controls button, .pose-source-actions button, .signal-pane-switch button {
+  min-height: 24px; min-width: 0; padding: 2px 9px; border: 0; border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.80); color: var(--text-secondary); font-size: 11px; font-weight: 500; white-space: nowrap;
+}
+.pose-view-switch button { background: transparent; }
+.pose-controls button[aria-pressed="true"],
+.pose-source-actions button[aria-pressed="true"],
+.signal-pane-switch button[aria-pressed="true"] {
+  color: #FFFFFF; background: var(--accent); font-weight: 600;
+}
+.pose-orbit { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--well-border) !important; }
+.pose-source-actions button { border: 1px solid var(--well-border); }
+.pose-source-actions select {
+  min-height: 24px; padding: 1px 8px; border: 1px solid var(--well-border);
+  border-radius: var(--r-pill); background: rgba(255, 255, 255, 0.88); font-size: 11px;
+}
+
+.pose-viewport { position: relative; display: grid; place-items: center; min-height: 0; min-width: 0; border-radius: var(--r-md); overflow: hidden; }
+.pose-empty { display: grid; justify-items: center; gap: 6px; padding: 8px; text-align: center; color: var(--text-tertiary); font-size: 12px; }
+
+/* Interactive 4-Angle Readout Cards (hover/click highlights corresponding 3D arc) */
+.pose-readouts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0; }
+.pose-angle-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 5px 9px;
+  min-width: 0;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid var(--well-border);
+  text-align: left;
+  transition: border-color 180ms var(--ease), box-shadow 180ms var(--ease), transform 160ms var(--ease-spring);
+}
+.pose-angle-card:hover { border-color: var(--angle-dot); }
+.pose-angle-card[aria-pressed="true"] {
+  background: #FFFFFF;
+  border-color: var(--angle-dot);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+.pose-angle-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.pose-angle-name i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--angle-dot);
+}
+.pose-angle-card strong {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+/* 3D Floating Joint Angle Pills Inside Canvas */
+.pose-angle-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.90);
+  border: 1px solid color-mix(in srgb, var(--angle-color) 42%, transparent);
+  color: var(--angle-color);
+  font-size: 10.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  transition: opacity 160ms var(--ease), transform 160ms var(--ease);
+}
+.pose-angle-pill:empty { display: none; }
+.pose-angle-pill.is-focused {
+  background: var(--angle-color);
+  color: #FFFFFF;
+  transform: scale(1.08);
+}
+.pose-angle-pill.is-dimmed { opacity: 0.35; }
+
+.pose-status { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+.pose-status > span { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
+.pose-status [data-status="ok"] i { background: var(--success); }
+.pose-status [data-status="lost"] i { background: var(--accent-warm); }
+.pose-uncal-tag { margin-left: auto; color: var(--warn-text); font-weight: 500; }
+.pose-status small { font-size: inherit; }
+.pose-status small:empty { display: none; }
+
+.pose-review-metrics { flex: none; margin-top: 6px; display: grid; gap: 4px; }
+.pose-review-metrics .signal-stats { margin-top: 0; padding: 4px 0; }
+.pose-review-metrics .signal-stat b { font-size: 15px; }
+
+/* Compact 4-angle cards inside Trial Review so all 4 angles + IMU status stay 100% visible */
+.ba-wave-panel:has(.pose-review-metrics) .pose-panel {
+  grid-template-rows: auto minmax(84px, 1fr) auto auto;
+  gap: 5px;
+  padding: 8px 10px;
+}
+.ba-wave-panel:has(.pose-review-metrics) .pose-readouts { gap: 4px; }
+.ba-wave-panel:has(.pose-review-metrics) .pose-angle-card {
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 8px;
+}
+.ba-wave-panel:has(.pose-review-metrics) .pose-angle-card strong { font-size: 13px; }
+
+.pose-canvas-fallback { position: absolute; inset: 0; display: grid; place-content: center; border-radius: var(--r-md); }
+.pose-side-tag {
+  display: block; color: var(--text-primary); font-size: 11px; font-weight: 600; white-space: nowrap; pointer-events: none;
+  background: rgba(255, 255, 255, 0.92); border: 1px solid var(--glass-edge); border-radius: var(--r-pill); padding: 1px 6px;
+}
+
+@media (max-width: 1279px) {
+  .ba-wave-panel { --pose-column: var(--pose-column-compact); }
+}
+@container signal-panel (max-width: 720px) {
+  .pose-signal-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .pose-signal-grid .signal-pane-switch { display: inline-flex; }
+  .pose-signal-grid .pose-column-heading { display: none; }
+  .pose-signal-grid .pose-panel { grid-area: 2 / 1; min-height: 0; }
+  .pose-signal-grid[data-pane="waves"] .pose-panel,
+  .pose-signal-grid[data-pane="pose"] .ba-signal-content { display: none; }
+}
+
+/* Interactive Timeline Annotation Pins on EMG Plot */
+.annotation-pin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  margin-left: -9px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  z-index: 6;
+  cursor: pointer;
+}
+.annotation-pin i {
+  position: absolute;
+  top: 6px;
+  bottom: 0;
+  left: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: #D95F02;
+  opacity: 0.90;
+  transition: transform 140ms var(--ease), opacity 140ms var(--ease);
+}
+.annotation-pin::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #D95F02;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.28);
+}
+.annotation-pin[data-tag="custom"] i, .annotation-pin[data-tag="custom"]::before { background: #2B8CBE; }
+.annotation-pin[data-tag="elbow_deficit"] i, .annotation-pin[data-tag="elbow_deficit"]::before { background: #7E57C2; }
+.annotation-pin:hover i { transform: scaleX(1.6); opacity: 1; }
+.annotation-bubble {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: rgba(22, 24, 31, 0.92);
+  color: #FFFFFF;
+  font-size: 10.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 140ms var(--ease), transform 140ms var(--ease);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
+}
+.annotation-pin:hover .annotation-bubble,
+.annotation-pin:focus-visible .annotation-bubble {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

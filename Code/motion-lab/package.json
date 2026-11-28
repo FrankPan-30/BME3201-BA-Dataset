@@ -1,0 +1,63 @@
+{
+  "name": "bme3201-motion-lab",
+  "version": "1.6.0",
+  "description": "BME3201 upper-limb movement assessment classroom demo",
+  "author": "BME3201 Project Group",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "desktop": "electron .",
+    "test": "node --test tests/*.test.ts",
+    "package:win": "npm run build && electron-builder --win nsis --x64 --publish never"
+  },
+  "dependencies": {
+    "@react-three/drei": "10.7.9",
+    "@react-three/fiber": "9.3.0",
+    "lucide-react": "0.468.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "three": "0.179.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.12",
+    "@types/react-dom": "19.1.9",
+    "@types/three": "0.179.0",
+    "electron": "42.4.0",
+    "electron-builder": "26.15.3",
+    "ts-ebml": "3.0.2",
+    "typescript": "5.9.3",
+    "vite": "7.3.1"
+  },
+  "build": {
+    "appId": "edu.bme3201.motionlab",
+    "productName": "BME3201 Motion Lab",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/main.cjs",
+      "electron/preload.cjs",
+      "electron/icon.ico",
+      "package.json",
+      "!node_modules/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "electron/icon.ico",
+      "artifactName": "BME3201_Motion_Lab_v${version}_Windows_x64_Setup.${ext}",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "packElevateHelper": false,
+      "installerIcon": "electron/icon.ico",
+      "uninstallerIcon": "electron/icon.ico"
+    }
+  }
+}
